@@ -129,7 +129,7 @@ export default function ImportPromotionsPage() {
         const chunk = records.slice(i, i + chunkSize);
         const { error } = await supabase
           .from('promotions')
-          .upsert(chunk, { onConflict: 'promotion_name,start_date,country', ignoreDuplicates: true });
+          .upsert(chunk, { onConflict: 'promotion_name,start_date,country' });
         if (error) throw error;
         inserted += chunk.length;
       }
@@ -145,12 +145,12 @@ export default function ImportPromotionsPage() {
     <main className="min-h-screen p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-3 mb-1">
-          <Link href="/promotions" className="text-sm text-gray-400 hover:text-gray-600">← 캘린더로</Link>
+          <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">← 캘린더로</Link>
         </div>
         <h1 className="text-xl font-bold text-gray-900 mb-1">라자다 엑셀로 프로모션 가져오기</h1>
         <p className="text-sm text-gray-500 mb-6">
           라자다에서 받는 캠페인 캘린더(.xlsx) 파일을 그대로 올리면, 자동으로 읽어서 프로모션 목록으로 정리해드려요.
-          같은 파일을 다시 올려도 이미 등록된 항목은 중복으로 쌓이지 않아요.
+          같은 프로모션을 다시 올리면 중복으로 쌓이지 않고, 날짜/내용이 바뀐 부분은 최신 정보로 업데이트돼요.
         </p>
 
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
@@ -213,7 +213,7 @@ export default function ImportPromotionsPage() {
             {importState === 'done' && importResult && (
               <div className="bg-white border border-emerald-200 rounded-xl p-4 mb-4 text-sm text-emerald-700">
                 {importResult.count}개 프로모션을 성공적으로 가져왔어요.{' '}
-                <Link href="/promotions" className="underline">캘린더에서 확인하기 →</Link>
+                <Link href="/" className="underline">캘린더에서 확인하기 →</Link>
               </div>
             )}
             {importState === 'error' && importResult && (
