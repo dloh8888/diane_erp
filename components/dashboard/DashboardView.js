@@ -9,18 +9,17 @@ import CategoryPanel from './CategoryPanel';
 import BrandPanel from './BrandPanel';
 import ItemPanel from './ItemPanel';
 import KeywordPanel from './KeywordPanel';
-import { EmptyState } from './ui';
 import { fmtCompact, fmtFull, fmtNum, fmtUpdated } from '../../lib/dashboard/format';
 
-// 원본 대시보드와 같은 8개 탭 구성입니다.
+// 데이터가 실제로 있는 탭만 둡니다.
+// (원본에 있던 By Traffic / SNS MKT 는 각각 방문자수 데이터와 SNS API 연동이
+//  준비되면 다시 넣습니다 — 빈 화면을 띄워두지 않기 위해 지금은 뺐습니다)
 const TABS = [
   { id: 'overview', label: 'Overview', dot: 'bg-blue-600', active: 'border-blue-600 bg-blue-50/70' },
   { id: 'country', label: 'By Country', dot: 'bg-orange-500', active: 'border-orange-500 bg-orange-50/70' },
   { id: 'category', label: 'By Category', dot: 'bg-emerald-600', active: 'border-emerald-600 bg-emerald-50/70' },
   { id: 'brand', label: 'By Brand', dot: 'bg-amber-500', active: 'border-amber-500 bg-amber-50/70' },
   { id: 'item', label: 'By Item', dot: 'bg-pink-500', active: 'border-pink-500 bg-pink-50/70' },
-  { id: 'traffic', label: 'By Traffic', dot: 'bg-green-700', active: 'border-green-700 bg-green-50/70' },
-  { id: 'sns', label: 'SNS MKT', dot: 'bg-violet-600', active: 'border-violet-600 bg-violet-50/70' },
   { id: 'keyword', label: 'Keyword Trend', dot: 'bg-red-500', active: 'border-red-500 bg-red-50/70' },
 ];
 
@@ -257,29 +256,6 @@ export default function DashboardView({ data }) {
 
         {/* ── By Item ── */}
         {tab === 'item' && <ItemPanel byItem={data.byItem} currency={currency} />}
-
-        {/* ── By Traffic (방문자 데이터가 들어오면 채웁니다) ── */}
-        {tab === 'traffic' && (
-          <Card title="By Traffic">
-            <EmptyState>
-              방문자수 데이터가 아직 시트에 없습니다.
-              <br />
-              구글시트 <b>일별실적</b> 탭의 &lsquo;방문자수&rsquo; 칸을 채워 올리시면
-              국가별 유입·전환율 분석이 이 자리에 나옵니다.
-            </EmptyState>
-          </Card>
-        )}
-
-        {/* ── SNS MKT — 나중에 API 연동 예정이라 자리만 잡아둡니다 ── */}
-        {tab === 'sns' && (
-          <Card title="SNS MKT">
-            <EmptyState>
-              SNS 데이터는 API 연동 예정입니다.
-              <br />
-              연동할 채널(인스타그램 · 틱톡 · 페이스북 등)이 정해지면 이 자리에 붙입니다.
-            </EmptyState>
-          </Card>
-        )}
 
         {/* ── Keyword Trend ── */}
         {tab === 'keyword' && (
