@@ -8,14 +8,20 @@ import CountryPanel from './CountryPanel';
 import CategoryPanel from './CategoryPanel';
 import BrandPanel from './BrandPanel';
 import ItemPanel from './ItemPanel';
+import KeywordPanel from './KeywordPanel';
+import { EmptyState } from './ui';
 import { fmtCompact, fmtFull, fmtNum, fmtUpdated } from '../../lib/dashboard/format';
 
+// 원본 대시보드와 같은 8개 탭 구성입니다.
 const TABS = [
   { id: 'overview', label: 'Overview', dot: 'bg-blue-600', active: 'border-blue-600 bg-blue-50/70' },
   { id: 'country', label: 'By Country', dot: 'bg-orange-500', active: 'border-orange-500 bg-orange-50/70' },
   { id: 'category', label: 'By Category', dot: 'bg-emerald-600', active: 'border-emerald-600 bg-emerald-50/70' },
   { id: 'brand', label: 'By Brand', dot: 'bg-amber-500', active: 'border-amber-500 bg-amber-50/70' },
   { id: 'item', label: 'By Item', dot: 'bg-pink-500', active: 'border-pink-500 bg-pink-50/70' },
+  { id: 'traffic', label: 'By Traffic', dot: 'bg-green-700', active: 'border-green-700 bg-green-50/70' },
+  { id: 'sns', label: 'SNS MKT', dot: 'bg-violet-600', active: 'border-violet-600 bg-violet-50/70' },
+  { id: 'keyword', label: 'Keyword Trend', dot: 'bg-red-500', active: 'border-red-500 bg-red-50/70' },
 ];
 
 /** 데이터 기준일 띠 — 원본 renderAsOf 대응 */
@@ -220,6 +226,8 @@ export default function DashboardView({ data }) {
               diagnostics={data.diagnostics}
               currency={currency}
               scopeNote={scopeNote}
+              showConversion={data.hasVisitorData}
+              showBudget={data.hasBudgetData}
             />
           </>
         )}
@@ -249,6 +257,37 @@ export default function DashboardView({ data }) {
 
         {/* ── By Item ── */}
         {tab === 'item' && <ItemPanel byItem={data.byItem} currency={currency} />}
+
+        {/* ── By Traffic (방문자 데이터가 들어오면 채웁니다) ── */}
+        {tab === 'traffic' && (
+          <Card title="By Traffic">
+            <EmptyState>
+              방문자수 데이터가 아직 시트에 없습니다.
+              <br />
+              구글시트 <b>일별실적</b> 탭의 &lsquo;방문자수&rsquo; 칸을 채워 올리시면
+              국가별 유입·전환율 분석이 이 자리에 나옵니다.
+            </EmptyState>
+          </Card>
+        )}
+
+        {/* ── SNS MKT (원본에서도 아직 비어있던 탭) ── */}
+        {tab === 'sns' && (
+          <Card title="SNS MKT">
+            <EmptyState>
+              아직 준비 중인 화면입니다. 어떤 지표를 보고 싶은지 알려주시면 만들어 드릴게요.
+            </EmptyState>
+          </Card>
+        )}
+
+        {/* ── Keyword Trend ── */}
+        {tab === 'keyword' && (
+          <KeywordPanel
+            keyword={data.keyword}
+            trend={data.trend}
+            rising={data.rising}
+            currency={currency}
+          />
+        )}
 
         <p className="text-xs text-gray-400 mt-8 leading-relaxed">
           데이터를 바꾸려면 구글시트에서 수정한 뒤 [파일 &gt; 다운로드 &gt; Microsoft Excel] 로 받아

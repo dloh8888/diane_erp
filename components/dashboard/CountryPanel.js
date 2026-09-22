@@ -52,8 +52,11 @@ function CountryChart({ rows, currency }) {
   );
 }
 
-/** 국가별 상세 표 — 원본 renderTable 의 칸 구성을 그대로 유지했습니다. */
-function CountryTable({ rows, summary, currency }) {
+/**
+ * 국가별 상세 표 — 원본 renderTable 의 칸 구성을 그대로 유지했습니다.
+ * 다만 방문자수·예산이 아직 시트에 없으면 그 칸은 숨깁니다 ('—' 만 줄줄이 나오지 않도록).
+ */
+function CountryTable({ rows, summary, currency, showConversion, showBudget }) {
   const totalGd = rows.reduce((s, r) => s + r.gdGmv, 0);
   const totalK = rows.reduce((s, r) => s + r.kbrandGmv, 0);
   const totalOrders = rows.reduce((s, r) => s + r.orders, 0);
@@ -76,8 +79,8 @@ function CountryTable({ rows, summary, currency }) {
             <th className={th}>Gmarket Day GMV</th>
             <th className={th}>K브랜드 GMV</th>
             <th className={th}>K브랜드 비중</th>
-            <th className={th}>전환율</th>
-            <th className={th}>예산 사용율</th>
+            {showConversion && <th className={th}>전환율</th>}
+            {showBudget && <th className={th}>예산 사용율</th>}
           </tr>
         </thead>
         <tbody>
@@ -90,8 +93,8 @@ function CountryTable({ rows, summary, currency }) {
               <td className={td}>{fmtFull(r.gdGmv, currency)}</td>
               <td className={td}>{fmtFull(r.kbrandGmv, currency)}</td>
               <td className={td}>{fmtPct(r.kbrandShare)}</td>
-              <td className={td}>{fmtPct(r.conversionPct, 2)}</td>
-              <td className={td}><Meter pct={r.budgetUsedPct} /></td>
+              {showConversion && <td className={td}>{fmtPct(r.conversionPct, 2)}</td>}
+              {showBudget && <td className={td}><Meter pct={r.budgetUsedPct} /></td>}
             </tr>
           ))}
         </tbody>
@@ -104,12 +107,16 @@ function CountryTable({ rows, summary, currency }) {
             <td className="py-2.5 px-2.5 text-right tabular-nums">{fmtFull(totalGd, currency)}</td>
             <td className="py-2.5 px-2.5 text-right tabular-nums">{fmtFull(totalK, currency)}</td>
             <td className="py-2.5 px-2.5 text-right tabular-nums">{fmtPct(totalGd ? (totalK / totalGd) * 100 : null)}</td>
-            <td className="py-2.5 px-2.5 text-right tabular-nums">
-              {fmtPct(totalVisitors ? (totalOrders / totalVisitors) * 100 : null, 2)}
-            </td>
-            <td className="py-2.5 px-2.5 text-right tabular-nums">
-              {fmtPct(totalBudget ? (totalSpend / totalBudget) * 100 : null)}
-            </td>
+            {showConversion && (
+              <td className="py-2.5 px-2.5 text-right tabular-nums">
+                {fmtPct(totalVisitors ? (totalOrders / totalVisitors) * 100 : null, 2)}
+              </td>
+            )}
+            {showBudget && (
+              <td className="py-2.5 px-2.5 text-right tabular-nums">
+                {fmtPct(totalBudget ? (totalSpend / totalBudget) * 100 : null)}
+              </td>
+            )}
           </tr>
         </tfoot>
       </table>
@@ -179,7 +186,10 @@ function BrandAudit({ diagnostics, currency }) {
   );
 }
 
-export default function CountryPanel({ rows, summary, diagnostics, currency, scopeNote }) {
+export default function CountryPanel({
+  rows, summary, diagnostics, currency, scopeNote,
+  showConversion = true, showBudget = true,
+}) {
   return (
     <div className="space-y-3">
       <Card
@@ -201,7 +211,19 @@ export default function CountryPanel({ rows, summary, diagnostics, currency, sco
         title="국가별 상세"
         note={'Gmarket Day 기간 기준 · 증감율은 BAU 일평균 GMV 대비' + (scopeNote || '')}
       >
-        <CountryTable rows={rows} summary={summary} currency={currency} />
+        <CountryTable
+          rows={rows}
+          summary={summary}
+          currency={currency}
+          showConversion={showConversion}
+          showBudget={showBudget}
+        />
+        {(!showConversion || !showBudget) && (
+          <p className="text-xs text-gray-400 mt-3 leading-relaxed">
+            {!showConversion && '· 전환율은 구글시트 일별실적 탭의 「방문자수」 칸이 채워지면 자동으로 나옵니다. '}
+            {!showBudget && '· 예산 사용율은 「광고비」 칸이 채워지면 자동으로 나옵니다.'}
+          </p>
+        )}
         <BrandAudit diagnostics={diagnostics} currency={currency} />
       </Card>
     </div>
