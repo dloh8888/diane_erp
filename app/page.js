@@ -8,11 +8,13 @@ import {
   formatKrw,
 } from '../lib/sales';
 import { fetchPromotions, buildMonthGrid, monthLabel } from '../lib/promotions';
+import { getDashboardData } from '../lib/dashboard/data';
 import KpiCard from '../components/KpiCard';
 import DailyBarChart from '../components/DailyBarChart';
 import PlatformBreakdown from '../components/PlatformBreakdown';
 import TopProductsTable from '../components/TopProductsTable';
 import PromotionCalendar from '../components/PromotionCalendar';
+import PromoSummary from '../components/dashboard/PromoSummary';
 
 // 이 페이지는 Next.js의 "서버 컴포넌트"입니다. 브라우저가 아니라
 // 서버(혹은 Vercel)에서 미리 Supabase 데이터를 읽어와서 완성된
@@ -38,6 +40,15 @@ export default async function DashboardPage({ searchParams }) {
     promotions = await fetchPromotions();
   } catch (e) {
     promotionsError = e.message;
+  }
+
+  // 캘린더 아래에 붙는 프로모션 실적 요약 (업로드한 실적 엑셀 기준).
+  // 아직 안 올렸으면 null 로 두고, 요약 자리에 업로드 안내를 보여줍니다.
+  let promoData = null;
+  try {
+    promoData = await getDashboardData();
+  } catch (e) {
+    promoData = null;
   }
 
   if (loadError) {
@@ -107,6 +118,11 @@ export default async function DashboardPage({ searchParams }) {
           </div>
 
           <PromotionCalendar weeks={weeks} promotions={promotions} todayStr={todayStr} />
+        </div>
+
+        {/* 캘린더 바로 아래 — 업로드한 실적 엑셀 기준 프로모션 실적 요약 */}
+        <div className="mb-8">
+          <PromoSummary data={promoData} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

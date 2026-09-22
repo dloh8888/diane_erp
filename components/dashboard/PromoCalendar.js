@@ -1,0 +1,132 @@
+'use client';
+
+import { useState } from 'react';
+import { tierChipClass } from '../../lib/dashboard/format';
+
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+function pad2(n) {
+  return String(n).padStart(2, '0');
+}
+
+function buildGrid(year, month /* 1~12 */) {
+  const first = new Date(year, month - 1, 1);
+  const start = new Date(year, month - 1, 1 - first.getDay());
+  const weeks = [];
+  const cursor = new Date(start);
+  for (let w = 0; w < 6; w++) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      week.push({
+        date: cursor.getFullYear() + '-' + pad2(cursor.getMonth() + 1) + '-' + pad2(cursor.getDate()),
+        day: cursor.getDate(),
+        inMonth: cursor.getMonth() === month - 1,
+      });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+/**
+ * 프로모션 캘린더.
+ * 처음 보여주는 달은 프로모션이 가장 많은 달(focusMonth)입니다 — 원본과 같습니다.
+ */
+export default function PromoCalendar({ promotions, focusMonth }) {
+  const [year, setYear] = useState(focusMonth.year);
+  const [month, setMonth] = useState(focusMonth.month);
+
+  const weeks = buildGrid(year, month);
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + pad2(today.getMonth() + 1) + '-' + pad2(today.getDate());
+
+  function move(delta) {
+    const d = new Date(year, month - 1 + delta, 1);
+    setYear(d.getFullYear());
+    setMonth(d.getMonth() + 1);
+  }
+
+  function onDate(dateStr) {
+    return promotions.filter((p) => p.start <= dateStr && (p.end || p.start) >= dateStr);
+  }
+
+  return (
+    <section className="bg-white border border-gray-200 rounded-2xl p-5">
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+        <div>
+          <div className="text-[13px] font-semibold text-gray-600 mb-1.5">프로모션 캘린더</div>
+          <div className="flex gap-3.5 flex-wrap text-xs text-gray-600">
+            <span className="inline-flex items-center gap-1.5">
+              <i className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />Gmarket Day
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <i className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />MEGA
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <i className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block" />A+
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => move(-1)}
+            className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+          >
+            ← 이전
+          </button>
+          <div className="font-semibold min-w-[108px] text-center">{year}년 {month}월</div>
+          <button
+            onClick={() => move(1)}
+            className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+          >
+            다음 →
+          </button>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <div className="grid grid-cols-7 min-w-[660px]">
+          {WEEKDAYS.map((w) => (
+            <div key={w} className="text-xs text-gray-400 text-center pb-2">{w}</div>
+          ))}
+          {weeks.flat().map((cell) => {
+            const active = onDate(cell.date);
+            const isToday = cell.date === todayStr;
+            return (
+              <div
+                key={cell.date}
+                className={'border-t border-gray-100 min-h-[86px] p-1.5 ' + (cell.inMonth ? '' : 'bg-gray-50/60')}
+              >
+                <div
+                  className={
+                    'text-xs mb-1 inline-flex items-center justify-center w-5 h-5 rounded-full ' +
+                    (isToday
+                      ? 'bg-blue-600 text-white font-bold'
+                      : cell.inMonth ? 'text-gray-600' : 'text-gray-300')
+                  }
+                >
+                  {cell.day}
+                </div>
+                <div className="space-y-[3px]">
+                  {active.slice(0, 3).map((p, i) => (
+                    <div
+                      key={p.name + i}
+                      className={'text-[11px] leading-tight px-1.5 py-0.5 rounded border truncate ' + tierChipClass(p.tier)}
+                      title={p.name + (p.country ? ' (' + p.country + ')' : '')}
+                    >
+                      {p.name}
+                    </div>
+                  ))}
+                  {active.length > 3 && (
+                    <div className="text-[10px] text-gray-400 pl-1">+{active.length - 3}개 더</div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
