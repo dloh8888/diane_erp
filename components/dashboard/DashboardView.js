@@ -270,11 +270,13 @@ export default function DashboardView({ data }) {
           </Card>
         )}
 
-        {/* ── SNS MKT (원본에서도 아직 비어있던 탭) ── */}
+        {/* ── SNS MKT — 나중에 API 연동 예정이라 자리만 잡아둡니다 ── */}
         {tab === 'sns' && (
           <Card title="SNS MKT">
             <EmptyState>
-              아직 준비 중인 화면입니다. 어떤 지표를 보고 싶은지 알려주시면 만들어 드릴게요.
+              SNS 데이터는 API 연동 예정입니다.
+              <br />
+              연동할 채널(인스타그램 · 틱톡 · 페이스북 등)이 정해지면 이 자리에 붙입니다.
             </EmptyState>
           </Card>
         )}
