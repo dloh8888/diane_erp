@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { parseWorkbook } from '../../../lib/dashboard/parseWorkbook';
+import { downloadTemplate, SHEET_SPECS } from '../../../lib/dashboard/template';
 import { supabase, supabaseConfigError } from '../../../lib/supabaseClient';
 
 const CHUNK = 500;
@@ -113,6 +114,27 @@ export default function DashboardImportPage() {
           (시트가 원본이니까요).
         </p>
 
+        {/* 양식 다운로드 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="text-sm font-semibold text-gray-800 mb-1">처음이신가요? 양식부터 받으세요</div>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                탭 이름과 칸 제목이 이미 들어있는 빈 양식입니다. 예시가 한 줄씩 들어있으니
+                지우고 실제 데이터를 채우시면 됩니다.
+                <br />
+                구글시트로 쓰시려면 이 파일을 구글드라이브에 올려서 구글시트로 열면 됩니다.
+              </p>
+            </div>
+            <button
+              onClick={downloadTemplate}
+              className="text-sm px-3 py-2 rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 whitespace-nowrap font-medium"
+            >
+              ↓ 양식 다운로드 (.xlsx)
+            </button>
+          </div>
+        </div>
+
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-4">
           <label className="block text-sm text-gray-600 mb-2">엑셀 파일 선택</label>
           <input
@@ -200,6 +222,66 @@ export default function DashboardImportPage() {
             )}
           </>
         )}
+
+        {/* 양식 설명 — 어떤 탭에 어떤 칸이 필요한지 */}
+        <details className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <summary className="cursor-pointer text-sm font-semibold text-gray-800">
+            어떤 탭에 무엇을 채워야 하나요? (양식 설명)
+          </summary>
+
+          <p className="text-xs text-gray-500 leading-relaxed mt-3 mb-4">
+            탭 이름과 1행(칸 제목)은 그대로 두셔야 읽을 수 있습니다. 필요 없는 탭은 비워두거나 지워도 되고,
+            <b className="text-gray-700"> 일별실적 탭 하나만 있어도</b> 대시보드가 만들어집니다.
+          </p>
+
+          <div className="space-y-4">
+            {SHEET_SPECS.map((spec) => (
+              <div key={spec.sheet} className="border border-gray-100 rounded-lg p-4">
+                <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                  <span className="text-[13px] font-bold text-gray-900">{spec.sheet}</span>
+                  <span
+                    className={
+                      'text-[10.5px] font-semibold rounded-full px-2 py-0.5 border ' +
+                      (spec.required
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        : 'bg-gray-50 text-gray-500 border-gray-200')
+                    }
+                  >
+                    {spec.required ? '필수' : '선택'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mb-3">{spec.about}</p>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs min-w-[520px]">
+                    <thead>
+                      <tr className="text-left text-gray-400 border-b border-gray-100">
+                        <th className="py-1.5 font-normal w-[140px]">칸 제목</th>
+                        <th className="py-1.5 font-normal w-[52px]">필수</th>
+                        <th className="py-1.5 font-normal">설명</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {spec.columns.map((col) => (
+                        <tr key={col.key} className="border-b border-gray-50 last:border-0">
+                          <td className="py-1.5 font-medium text-gray-800 whitespace-nowrap">{col.key}</td>
+                          <td className="py-1.5">
+                            {col.required ? (
+                              <span className="text-indigo-600 font-semibold">필수</span>
+                            ) : (
+                              <span className="text-gray-300">—</span>
+                            )}
+                          </td>
+                          <td className="py-1.5 text-gray-500">{col.hint}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        </details>
       </div>
     </main>
   );
