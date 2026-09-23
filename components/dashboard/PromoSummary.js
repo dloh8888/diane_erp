@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { Delta } from './ui';
+import { useLang } from './LangContext';
 import { fmtCompact, fmtFull, fmtNum, fmtSignedPct } from '../../lib/dashboard/format';
 
 /**
@@ -25,7 +26,7 @@ function SummaryTile({ label, value, sub, delta, accent }) {
 }
 
 /** 국가별 일 GMV — Gmarket Day 와 BAU 를 나란히 */
-function CountryDailyGmv({ rows, currency }) {
+function CountryDailyGmv({ rows, currency, lang }) {
   const max = Math.max(...rows.map((r) => Math.max(r.gdDailyGmv || 0, r.bauDailyGmv || 0)), 1);
 
   return (
@@ -35,9 +36,9 @@ function CountryDailyGmv({ rows, currency }) {
           <div className="flex items-baseline justify-between gap-3 mb-1">
             <span className="text-[13px] font-semibold">{r.country}</span>
             <span className="text-xs text-gray-400">
-              <span className="text-gray-700 font-semibold tabular-nums">{fmtCompact(r.gdDailyGmv, currency)}</span>
+              <span className="text-gray-700 font-semibold tabular-nums">{fmtCompact(r.gdDailyGmv, currency, lang)}</span>
               <span className="mx-1.5 text-gray-300">vs</span>
-              <span className="tabular-nums">{fmtCompact(r.bauDailyGmv, currency)}</span>
+              <span className="tabular-nums">{fmtCompact(r.bauDailyGmv, currency, lang)}</span>
               <span className="ml-2">
                 {r.growthPct === null || r.growthPct === undefined ? (
                   '—'
@@ -73,22 +74,24 @@ function CountryDailyGmv({ rows, currency }) {
 }
 
 export default function PromoSummary({ data }) {
+  const { t, lang } = useLang();
+  const en = lang === 'en';
   // 아직 실적 엑셀을 안 올린 상태
   if (!data || data.isEmpty) {
     return (
       <section className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="text-base font-semibold text-gray-800 mb-1">프로모션 실적 요약</h2>
+            <h2 className="text-base font-semibold text-gray-800 mb-1">{t('프로모션 실적 요약')}</h2>
             <p className="text-sm text-gray-500 leading-relaxed">
-              실적 엑셀을 올리면 이 자리에 Gmarket Day / BAU 비교와 국가별 일 GMV가 자동으로 나옵니다.
+              {t('실적 엑셀을 올리면 이 자리에 Gmarket Day / BAU 비교와 국가별 일 GMV가 자동으로 나옵니다.')}
             </p>
           </div>
           <Link
             href="/dashboard/import"
             className="text-sm px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 whitespace-nowrap"
           >
-            실적 엑셀 업로드
+            {t('실적 엑셀 업로드')}
           </Link>
         </div>
       </section>
@@ -102,10 +105,10 @@ export default function PromoSummary({ data }) {
     <section className="bg-white border border-gray-200 rounded-xl p-5">
       <div className="flex items-start justify-between gap-4 flex-wrap mb-1">
         <div>
-          <h2 className="text-base font-semibold text-gray-800">프로모션 실적 요약</h2>
+          <h2 className="text-base font-semibold text-gray-800">{t('프로모션 실적 요약')}</h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            {data.period.dataFirst} ~ {data.period.dataLast} 기준 · {data.byCountry.length}개국 ·
-            {' '}증감율은 <b className="text-gray-600 font-semibold">국가별 일평균</b> 기준 BAU 대비
+            {data.period.dataFirst} ~ {data.period.dataLast} · {en ? data.byCountry.length + ' countries' : data.byCountry.length + '개국'} ·
+            {' '}{t('증감율은')} <b className="text-gray-600 font-semibold">{t('국가별 일평균')}</b>{t('기준 BAU 대비')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -113,13 +116,13 @@ export default function PromoSummary({ data }) {
             href="/dashboard"
             className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 whitespace-nowrap"
           >
-            자세히 보기
+            {t('자세히 보기')}
           </Link>
           <Link
             href="/dashboard/import"
             className="text-sm px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 whitespace-nowrap"
           >
-            실적 엑셀 업로드
+            {t('실적 엑셀 업로드')}
           </Link>
         </div>
       </div>
@@ -127,24 +130,24 @@ export default function PromoSummary({ data }) {
       {/* 요약 4칸 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4 mb-5">
         <SummaryTile
-          label="Gmarket Day 총 GMV"
-          value={fmtCompact(s.gdTotalGmv, currency)}
-          sub={fmtFull(s.gdTotalGmv, currency)}
+          label={t('Gmarket Day 총 GMV')}
+          value={fmtCompact(s.gdTotalGmv, currency, lang)}
+          sub={fmtFull(s.gdTotalGmv, currency, lang)}
           accent="bg-blue-50/70 border-blue-200"
         />
         <SummaryTile
-          label="BAU 총 GMV"
-          value={fmtCompact(s.bauTotalGmv, currency)}
-          sub={fmtFull(s.bauTotalGmv, currency)}
+          label={t('BAU 총 GMV')}
+          value={fmtCompact(s.bauTotalGmv, currency, lang)}
+          sub={fmtFull(s.bauTotalGmv, currency, lang)}
           accent="bg-orange-50/70 border-orange-200"
         />
         <SummaryTile
-          label="BAU 대비 증감율"
+          label={t('BAU 대비 증감율')}
           value={fmtSignedPct(s.gmvGrowthPct)}
           sub={
-            '일평균 ' + fmtCompact(s.gdDailyGmv, currency) + ' vs ' + fmtCompact(s.bauDailyGmv, currency)
+            (en ? 'daily avg ' : '일평균 ') + fmtCompact(s.gdDailyGmv, currency, lang) + ' vs ' + fmtCompact(s.bauDailyGmv, currency, lang)
           }
-          delta={<Delta pct={s.gmvGrowthPct} note="일평균 GMV 기준" />}
+          delta={<Delta pct={s.gmvGrowthPct} note={t('일평균 GMV 기준')} />}
           accent={
             s.gmvGrowthPct === null || s.gmvGrowthPct === undefined
               ? 'bg-gray-50 border-gray-200'
@@ -154,10 +157,10 @@ export default function PromoSummary({ data }) {
           }
         />
         <SummaryTile
-          label="Gmarket Day 총 주문건수"
-          value={fmtNum(s.gdTotalOrders) + '건'}
-          sub={'BAU ' + fmtNum(s.bauTotalOrders) + '건'}
-          delta={<Delta pct={s.ordersGrowthPct} note="BAU 대비" />}
+          label={t('Gmarket Day 총 주문건수')}
+          value={en ? fmtNum(s.gdTotalOrders, 'en') + ' orders' : fmtNum(s.gdTotalOrders) + '건'}
+          sub={'BAU ' + (en ? fmtNum(s.bauTotalOrders, 'en') : fmtNum(s.bauTotalOrders) + '건')}
+          delta={<Delta pct={s.ordersGrowthPct} note={t('BAU 대비')} />}
           accent="bg-violet-50/70 border-violet-200"
         />
       </div>
@@ -165,7 +168,7 @@ export default function PromoSummary({ data }) {
       {/* 국가별 일 GMV */}
       <div className="border-t border-gray-100 pt-4">
         <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
-          <div className="text-[13px] font-semibold text-gray-700">국가별 일 GMV</div>
+          <div className="text-[13px] font-semibold text-gray-700">{t('국가별 일 GMV')}</div>
           <div className="flex gap-3.5 text-xs text-gray-500">
             <span className="inline-flex items-center gap-1.5">
               <i className="w-2.5 h-2.5 rounded-sm bg-blue-600 inline-block" />Gmarket Day
@@ -175,7 +178,7 @@ export default function PromoSummary({ data }) {
             </span>
           </div>
         </div>
-        <CountryDailyGmv rows={data.byCountry} currency={currency} />
+        <CountryDailyGmv rows={data.byCountry} currency={currency} lang={lang} />
       </div>
     </section>
   );

@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useLang } from './LangContext';
 import { tierChipClass } from '../../lib/dashboard/format';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'];
 
 function pad2(n) {
   return String(n).padStart(2, '0');
@@ -34,6 +37,7 @@ function buildGrid(year, month /* 1~12 */) {
  * 처음 보여주는 달은 프로모션이 가장 많은 달(focusMonth)입니다 — 원본과 같습니다.
  */
 export default function PromoCalendar({ promotions, focusMonth }) {
+  const { t, lang } = useLang();
   const [year, setYear] = useState(focusMonth.year);
   const [month, setMonth] = useState(focusMonth.month);
 
@@ -74,7 +78,7 @@ export default function PromoCalendar({ promotions, focusMonth }) {
     <section className="bg-white border border-gray-200 rounded-2xl p-5">
       <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
         <div>
-          <div className="text-[13px] font-semibold text-gray-600 mb-1.5">프로모션 캘린더</div>
+          <div className="text-[13px] font-semibold text-gray-600 mb-1.5">{t('프로모션 캘린더')}</div>
           <div className="flex gap-3.5 flex-wrap text-xs text-gray-600">
             <span className="inline-flex items-center gap-1.5">
               <i className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />Gmarket Day
@@ -92,14 +96,14 @@ export default function PromoCalendar({ promotions, focusMonth }) {
             onClick={() => move(-1)}
             className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
           >
-            ← 이전
+            {lang === 'en' ? '← Prev' : '← 이전'}
           </button>
-          <div className="font-semibold min-w-[108px] text-center">{year}년 {month}월</div>
+          <div className="font-semibold min-w-[108px] text-center">{lang === 'en' ? MONTHS_EN[month - 1] + ' ' + year : year + '년 ' + month + '월'}</div>
           <button
             onClick={() => move(1)}
             className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
           >
-            다음 →
+            {lang === 'en' ? 'Next →' : '다음 →'}
           </button>
         </div>
       </div>
@@ -107,7 +111,7 @@ export default function PromoCalendar({ promotions, focusMonth }) {
       <div className="overflow-x-auto">
         <div className="grid grid-cols-7 min-w-[660px]">
           {WEEKDAYS.map((w) => (
-            <div key={w} className="text-xs text-gray-400 text-center pb-2">{w}</div>
+            <div key={w} className="text-xs text-gray-400 text-center pb-2">{t(w)}</div>
           ))}
           {weeks.flat().map((cell) => {
             const active = onDate(cell.date);
@@ -143,7 +147,7 @@ export default function PromoCalendar({ promotions, focusMonth }) {
                     </div>
                   ))}
                   {active.length > 3 && (
-                    <div className="text-[10px] text-gray-400 pl-1">+{active.length - 3}개 더</div>
+                    <div className="text-[10px] text-gray-400 pl-1">+{active.length - 3}{t('개 더')}</div>
                   )}
                 </div>
               </div>

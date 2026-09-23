@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Card, EmptyState } from './ui';
+import { useLang } from './LangContext';
 import { fmtFull, fmtCompact, fmtNum } from '../../lib/dashboard/format';
 
 const PAGE_SIZE = 20;
@@ -42,6 +43,7 @@ function Thumb({ item, templates }) {
 }
 
 export default function ItemPanel({ byItem, currency }) {
+  const { t } = useLang();
   const [cat, setCat] = useState('');
   const [country, setCountry] = useState('');
   const [kOnly, setKOnly] = useState('all');
@@ -85,7 +87,7 @@ export default function ItemPanel({ byItem, currency }) {
 
   if (!items.length) {
     return (
-      <Card title="상품별">
+      <Card title={t('상품별')}>
         <EmptyState>
           상품 데이터가 없습니다. 구글시트 <b>일별실적</b> 탭에 &lsquo;상품(번호)&rsquo; 또는 &lsquo;상품명&rsquo; 칸이 있는지 확인해주세요.
         </EmptyState>
@@ -97,10 +99,10 @@ export default function ItemPanel({ byItem, currency }) {
 
   return (
     <Card
-      title="상품 랭킹"
+      title={t('상품 랭킹')}
       note={
-        'Gmarket Day 기간 기준 · GMV 큰 순' +
-        (byItem.perCatLimit ? ' · 카테고리마다 상위 ' + byItem.perCatLimit + '개까지만 계산' : '')
+        t('Gmarket Day 기간 기준 · GMV 큰 순') +
+        (byItem.perCatLimit ? t('· 카테고리마다 상위') + ' ' + byItem.perCatLimit + t('개까지만 계산') : '')
       }
     >
       {/* 카테고리 세부 탭 */}
@@ -112,7 +114,7 @@ export default function ItemPanel({ byItem, currency }) {
             (cat === '' ? 'bg-amber-100 border-amber-300 text-amber-900 font-semibold' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300')
           }
         >
-          전체
+          {t('전체')}
         </button>
         {categories.map((c) => (
           <button
@@ -132,39 +134,39 @@ export default function ItemPanel({ byItem, currency }) {
       {/* 필터 */}
       <div className="flex flex-wrap items-end gap-3 mb-4">
         <div className="flex flex-col gap-1 text-xs text-gray-400">
-          국가
+          {t('국가')}
           <select
             value={country}
             onChange={(e) => { setCountry(e.target.value); setLimit(PAGE_SIZE); }}
             className="text-[13px] px-2 py-1.5 rounded-lg border border-gray-200 bg-white min-w-[150px]"
           >
-            <option value="">전체</option>
+            <option value="">{t('전체')}</option>
             {countries.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className="flex flex-col gap-1 text-xs text-gray-400">
-          K브랜드
+          K‑brand
           <select
             value={kOnly}
             onChange={(e) => { setKOnly(e.target.value); setLimit(PAGE_SIZE); }}
             className="text-[13px] px-2 py-1.5 rounded-lg border border-gray-200 bg-white min-w-[150px]"
           >
-            <option value="all">전체</option>
-            <option value="k">K브랜드만</option>
-            <option value="non">K브랜드 아닌 것만</option>
+            <option value="all">{t('전체')}</option>
+            <option value="k">{t('K브랜드만')}</option>
+            <option value="non">{t('K브랜드 아닌 것만')}</option>
           </select>
         </div>
         <div className="flex flex-col gap-1 text-xs text-gray-400">
-          검색
+          {t('검색')}
           <input
             value={q}
             onChange={(e) => { setQ(e.target.value); setLimit(PAGE_SIZE); }}
-            placeholder="상품명 · 브랜드 · 상품번호"
+            placeholder={t('상품명 · 브랜드 · 상품번호')}
             className="text-[13px] px-2 py-1.5 rounded-lg border border-gray-200 bg-white min-w-[190px]"
           />
         </div>
         <div className="text-xs text-gray-400 ml-auto pb-1.5">
-          {rows.length.toLocaleString('ko-KR')}개
+          {rows.length.toLocaleString('ko-KR')}{t('개')}
         </div>
       </div>
 
@@ -199,11 +201,11 @@ export default function ItemPanel({ byItem, currency }) {
                     <dd className="text-sm font-bold tabular-nums">{fmtCompact(it._gmv, currency)}</dd>
                   </div>
                   <div className="flex items-baseline justify-between gap-2">
-                    <dt className="text-[11px] text-gray-400">주문</dt>
+                    <dt className="text-[11px] text-gray-400">{t('주문')}</dt>
                     <dd className="text-xs tabular-nums">{fmtNum(it._orders)}건</dd>
                   </div>
                   <div className="flex items-baseline justify-between gap-2">
-                    <dt className="text-[11px] text-gray-400">수량</dt>
+                    <dt className="text-[11px] text-gray-400">{t('수량')}</dt>
                     <dd className="text-xs tabular-nums">{fmtNum(it._qty)}개</dd>
                   </div>
                 </dl>
@@ -223,14 +225,14 @@ export default function ItemPanel({ byItem, currency }) {
         })}
       </div>
 
-      {rows.length === 0 && <EmptyState>조건에 맞는 상품이 없습니다.</EmptyState>}
+      {rows.length === 0 && <EmptyState>{t('조건에 맞는 상품이 없습니다.')}</EmptyState>}
 
       {rows.length > limit && (
         <button
           onClick={() => setLimit(limit + PAGE_SIZE)}
           className="mt-4 text-sm px-4 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
         >
-          더 보기 ({(rows.length - limit).toLocaleString('ko-KR')}개 남음)
+          {t('더 보기')} ({(rows.length - limit).toLocaleString('ko-KR')}{t('개 남음')})
         </button>
       )}
     </Card>

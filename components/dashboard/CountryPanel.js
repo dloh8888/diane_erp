@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, Delta, Meter } from './ui';
+import { useLang } from './LangContext';
 import { fmtFull, fmtCompact, fmtPct, fmtSignedPct } from '../../lib/dashboard/format';
 
 /** 국가별 일평균 GMV 비교 막대 (Gmarket Day vs BAU) — 원본 renderChart 대응 */
@@ -57,6 +58,7 @@ function CountryChart({ rows, currency }) {
  * 다만 방문자수·예산이 아직 시트에 없으면 그 칸은 숨깁니다 ('—' 만 줄줄이 나오지 않도록).
  */
 function CountryTable({ rows, summary, currency, showConversion, showBudget }) {
+  const { t } = useLang();
   const totalGd = rows.reduce((s, r) => s + r.gdGmv, 0);
   const totalK = rows.reduce((s, r) => s + r.kbrandGmv, 0);
   const totalOrders = rows.reduce((s, r) => s + r.orders, 0);
@@ -72,15 +74,15 @@ function CountryTable({ rows, summary, currency, showConversion, showBudget }) {
       <table className="w-full text-[13px] min-w-[860px]">
         <thead>
           <tr>
-            <th className={th + ' text-left'}>국가</th>
-            <th className={th}>Gmarket Day 일평균 GMV</th>
-            <th className={th}>BAU 일평균 GMV</th>
-            <th className={th}>증감율</th>
+            <th className={th + ' text-left'}>{t('국가')}</th>
+            <th className={th}>{t('Gmarket Day 일평균 GMV')}</th>
+            <th className={th}>{t('BAU 일평균 GMV')}</th>
+            <th className={th}>{t('증감율')}</th>
             <th className={th}>Gmarket Day GMV</th>
-            <th className={th}>K브랜드 GMV</th>
-            <th className={th}>K브랜드 비중</th>
-            {showConversion && <th className={th}>전환율</th>}
-            {showBudget && <th className={th}>예산 사용율</th>}
+            <th className={th}>{t('K브랜드 GMV')}</th>
+            <th className={th}>{t('K브랜드 비중')}</th>
+            {showConversion && <th className={th}>{t('전환율')}</th>}
+            {showBudget && <th className={th}>{t('예산 사용율')}</th>}
           </tr>
         </thead>
         <tbody>
@@ -100,7 +102,7 @@ function CountryTable({ rows, summary, currency, showConversion, showBudget }) {
         </tbody>
         <tfoot>
           <tr className="font-semibold border-t border-gray-300">
-            <td className="py-2.5 px-2.5 text-left">합계</td>
+            <td className="py-2.5 px-2.5 text-left">{t('합계')}</td>
             <td className="py-2.5 px-2.5 text-right tabular-nums">{fmtFull(summary.gdDailyGmv, currency)}</td>
             <td className="py-2.5 px-2.5 text-right tabular-nums">{fmtFull(summary.bauDailyGmv, currency)}</td>
             <td className="py-2.5 px-2.5 text-right"><Delta pct={summary.growthPct} /></td>
@@ -126,6 +128,7 @@ function CountryTable({ rows, summary, currency, showConversion, showBudget }) {
 
 /** K브랜드 분류가 제대로 됐는지 확인하는 접이식 목록 (원본 renderBrandAudit) */
 function BrandAudit({ diagnostics, currency }) {
+  const { t } = useLang();
   const brands = diagnostics?.brands || [];
   if (!brands.length) return null;
   const kBrands = brands.filter((b) => b.isK);
@@ -136,11 +139,11 @@ function BrandAudit({ diagnostics, currency }) {
   return (
     <details className="mt-4 pt-3 border-t border-gray-100">
       <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-800">
-        브랜드 분류 확인 — K브랜드 {kBrands.length}개 / 그 외 {others.length}개
+        {t('K브랜드로 계산된 브랜드')} {kBrands.length} / {t('K브랜드가 아닌 것으로 계산된 브랜드')} {others.length}
       </summary>
       <div className="grid md:grid-cols-2 gap-5 mt-3">
         <div>
-          <div className="text-xs text-gray-400 mb-1.5">K브랜드로 계산된 브랜드</div>
+          <div className="text-xs text-gray-400 mb-1.5">{t('K브랜드로 계산된 브랜드')}</div>
           <ul className="text-xs">
             {kBrands.slice(0, 40).map((b) => (
               <li key={b.brand} className="flex justify-between gap-3 py-1 border-b border-gray-100 last:border-0">
@@ -158,7 +161,7 @@ function BrandAudit({ diagnostics, currency }) {
           </ul>
         </div>
         <div>
-          <div className="text-xs text-gray-400 mb-1.5">K브랜드가 아닌 것으로 계산된 브랜드</div>
+          <div className="text-xs text-gray-400 mb-1.5">{t('K브랜드가 아닌 것으로 계산된 브랜드')}</div>
           <ul className="text-xs">
             {others.slice(0, 40).map((b) => (
               <li
@@ -190,11 +193,12 @@ export default function CountryPanel({
   rows, summary, diagnostics, currency, scopeNote,
   showConversion = true, showBudget = true,
 }) {
+  const { t } = useLang();
   return (
     <div className="space-y-3">
       <Card
-        title="국가별 일 GMV"
-        note={'Gmarket Day 기간과 BAU 기간의 하루 평균 GMV 비교 · 막대 위 숫자는 BAU 대비 증감율' + (scopeNote || '')}
+        title={t('국가별 일 GMV')}
+        note={t('Gmarket Day 기간과 BAU 기간의 하루 평균 GMV 비교 · 막대 위 숫자는 BAU 대비 증감율') + (scopeNote || '')}
       >
         <div className="flex gap-3.5 flex-wrap text-xs text-gray-600 mb-2">
           <span className="inline-flex items-center gap-1.5">
@@ -208,8 +212,8 @@ export default function CountryPanel({
       </Card>
 
       <Card
-        title="국가별 상세"
-        note={'Gmarket Day 기간 기준 · 증감율은 BAU 일평균 GMV 대비' + (scopeNote || '')}
+        title={t('국가별 상세')}
+        note={t('Gmarket Day 기간 기준 · 증감율은 BAU 일평균 GMV 대비') + (scopeNote || '')}
       >
         <CountryTable
           rows={rows}
@@ -220,8 +224,8 @@ export default function CountryPanel({
         />
         {(!showConversion || !showBudget) && (
           <p className="text-xs text-gray-400 mt-3 leading-relaxed">
-            {!showConversion && '· 전환율은 구글시트 일별실적 탭의 「방문자수」 칸이 채워지면 자동으로 나옵니다. '}
-            {!showBudget && '· 예산 사용율은 「광고비」 칸이 채워지면 자동으로 나옵니다.'}
+            {!showConversion && t('· 전환율은 구글시트 일별실적 탭의 「방문자수」 칸이 채워지면 자동으로 나옵니다. ')}
+            {!showBudget && t('· 예산 사용율은 「광고비」 칸이 채워지면 자동으로 나옵니다.')}
           </p>
         )}
         <BrandAudit diagnostics={diagnostics} currency={currency} />
