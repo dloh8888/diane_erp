@@ -1,54 +1,21 @@
 import Link from 'next/link';
-import {
-  fetchRecentSales,
-  computeKpis,
-  computeRevenueByPlatform,
-  computeDailyRevenue,
-  computeTopProducts,
-  formatKrw,
-} from '../lib/sales';
-import { fetchPromotions, buildMonthGrid, monthLabel } from '../lib/promotions';
 import { getDashboardData } from '../lib/dashboard/data';
-import KpiCard from '../components/KpiCard';
-import DailyBarChart from '../components/DailyBarChart';
-import PlatformBreakdown from '../components/PlatformBreakdown';
-import TopProductsTable from '../components/TopProductsTable';
-import PromotionCalendar from '../components/PromotionCalendar';
+import PromoCalendar from '../components/dashboard/PromoCalendar';
 import PromoSummary from '../components/dashboard/PromoSummary';
 
-// 이 페이지는 Next.js의 "서버 컴포넌트"입니다. 브라우저가 아니라
-// 서버(혹은 Vercel)에서 미리 Supabase 데이터를 읽어와서 완성된
-// HTML을 보내주기 때문에, 화면에서 API 키가 그대로 노출되지 않고
-// 로딩 스피너 코드도 따로 안 짜도 됩니다.
-export const dynamic = 'force-dynamic'; // 매번 새로 데이터를 읽어오게 함 (캐시 안 씀)
+// 이 페이지는 Next.js의 "서버 컴포넌트"입니다. 브라우저가 아니라 서버에서
+// 미리 데이터를 읽어와서 완성된 HTML을 보내주기 때문에, 화면에서 API 키가
+// 노출되지 않고 로딩 스피너 코드도 따로 안 짜도 됩니다.
+export const dynamic = 'force-dynamic'; // 매번 새로 데이터를 읽어오게 함
 
-export default async function DashboardPage({ searchParams }) {
-  let rows = [];
+export default async function HomePage() {
+  let data = null;
   let loadError = null;
 
   try {
-    rows = await fetchRecentSales();
+    data = await getDashboardData();
   } catch (e) {
     loadError = e.message;
-  }
-
-  // 프로모션 캘린더는 부가 기능이라, 여기서 에러가 나도
-  // 판매 성과 리포트 자체는 그대로 보여주도록 따로 처리합니다.
-  let promotions = [];
-  let promotionsError = null;
-  try {
-    promotions = await fetchPromotions();
-  } catch (e) {
-    promotionsError = e.message;
-  }
-
-  // 캘린더 아래에 붙는 프로모션 실적 요약 (업로드한 실적 엑셀 기준).
-  // 아직 안 올렸으면 null 로 두고, 요약 자리에 업로드 안내를 보여줍니다.
-  let promoData = null;
-  try {
-    promoData = await getDashboardData();
-  } catch (e) {
-    promoData = null;
   }
 
   if (loadError) {
@@ -62,99 +29,56 @@ export default async function DashboardPage({ searchParams }) {
     );
   }
 
-  const kpis = computeKpis(rows);
-  const byPlatform = computeRevenueByPlatform(rows);
-  const daily = computeDailyRevenue(rows);
-  const topProducts = computeTopProducts(rows, 5);
-
-  const now = new Date();
-  const year = parseInt(searchParams?.y, 10) || now.getFullYear();
-  const monthIndex0 = searchParams?.m ? parseInt(searchParams.m, 10) - 1 : now.getMonth();
-  const todayStr = now.toISOString().slice(0, 10);
-  const weeks = buildMonthGrid(year, monthIndex0);
-  const prevMonth = new Date(year, monthIndex0 - 1, 1);
-  const nextMonth = new Date(year, monthIndex0 + 1, 1);
+  const hasData = data && !data.isEmpty;
 
   return (
-    <main className="min-h-screen p-6 md:p-10">
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-xl font-bold text-gray-900 mb-1">판매 성과 리포트</h1>
-        <p className="text-sm text-gray-500 mb-6">
-          sales 테이블 기준 · 데이터 {rows.length}건 (최근 90일)
-        </p>
-
-        {/* 프로모션 캘린더: 엑셀 업로드로 채워지는 캘린더를 리포트 위쪽에 표시 */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold text-gray-800">프로모션 캘린더</h2>
+    <main className="min-h-screen p-6 md:p-10 bg-[#f9f9f7]">
+      <div className="max-w-[1240px] mx-auto">
+        <div className="flex items-baseline justify-between gap-4 flex-wrap mb-5">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-gray-900">프로모션 캘린더</h1>
+            <p className="text-[13px] text-gray-500 mt-0.5">
+              {hasData
+                ? '구글시트 프로모션캘린더 탭 기준 · 같은 프로모션은 하나로 묶고 진행 국가를 함께 보여줍니다'
+                : '구글시트를 올리면 이 자리에 일정이 표시됩니다'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
             <Link
-              href="/promotions/import"
+              href="/dashboard"
+              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 whitespace-nowrap"
+            >
+              대시보드 열기
+            </Link>
+            <Link
+              href="/dashboard/import"
               className="text-sm px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 whitespace-nowrap"
             >
-              엑셀로 업로드
+              구글시트 올리기
             </Link>
           </div>
+        </div>
 
-          {promotionsError && (
-            <div className="bg-white border border-amber-200 rounded-xl p-4 mb-3 text-sm text-amber-700 whitespace-pre-wrap">
-              프로모션 캘린더를 아직 불러올 수 없어요: {promotionsError}
-            </div>
-          )}
-
-          <div className="flex items-center justify-between mb-3">
+        {hasData ? (
+          <div className="space-y-3">
+            <PromoCalendar promotions={data.promotions} focusMonth={data.focusMonth} />
+            <PromoSummary data={data} />
+          </div>
+        ) : (
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <div className="font-semibold text-gray-900 mb-2">아직 데이터가 없습니다</div>
+            <p className="text-sm text-gray-500 leading-relaxed mb-5">
+              구글시트에서 <b>[파일 &gt; 다운로드 &gt; Microsoft Excel(.xlsx)]</b> 로 시트를 통째로 받아
+              올려주시면 캘린더와 실적 요약이 바로 만들어집니다.
+            </p>
             <Link
-              href={'/?y=' + prevMonth.getFullYear() + '&m=' + (prevMonth.getMonth() + 1)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
+              href="/dashboard/import"
+              className="inline-block text-sm px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
             >
-              ← 이전 달
-            </Link>
-            <div className="font-semibold text-gray-800">{monthLabel(year, monthIndex0)}</div>
-            <Link
-              href={'/?y=' + nextMonth.getFullYear() + '&m=' + (nextMonth.getMonth() + 1)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50"
-            >
-              다음 달 →
+              구글시트 올리기
             </Link>
           </div>
-
-          <PromotionCalendar weeks={weeks} promotions={promotions} todayStr={todayStr} />
-        </div>
-
-        {/* 캘린더 바로 아래 — 업로드한 실적 엑셀 기준 프로모션 실적 요약 */}
-        <div className="mb-8">
-          <PromoSummary data={promoData} />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <KpiCard
-            label="이번 달 매출"
-            value={formatKrw(kpis.thisMonthRevenue)}
-            hint={
-              kpis.momChangePct === null
-                ? '전월 데이터 없음'
-                : (kpis.momChangePct >= 0 ? '▲ ' : '▼ ') + Math.abs(kpis.momChangePct).toFixed(1) + '% (전월 대비)'
-            }
-            hintColor={
-              kpis.momChangePct === null
-                ? 'text-gray-400'
-                : (kpis.momChangePct >= 0 ? 'text-green-600' : 'text-red-500')
-            }
-          />
-          <KpiCard label="이번 달 주문 수" value={kpis.thisMonthOrders.toLocaleString('ko-KR') + '건'} />
-          <KpiCard label="평균 객단가" value={formatKrw(kpis.avgOrderValue)} />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <DailyBarChart data={daily} />
-          <PlatformBreakdown data={byPlatform} />
-        </div>
-
-        <TopProductsTable data={topProducts} />
-
-        <p className="text-xs text-gray-400 mt-8">
-          데이터를 더 추가하려면 Supabase 대시보드 &gt; Table Editor &gt; sales 테이블에서
-          바로 행을 추가하면 이 화면에 자동으로 반영됩니다.
-        </p>
+        )}
       </div>
     </main>
   );

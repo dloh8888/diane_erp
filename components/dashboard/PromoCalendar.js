@@ -47,8 +47,27 @@ export default function PromoCalendar({ promotions, focusMonth }) {
     setMonth(d.getMonth() + 1);
   }
 
+  /**
+   * 그 날 진행 중인 프로모션.
+   * 같은 프로모션이 국가마다 한 줄씩 들어있어서 그대로 두면 하루에 칩이 다섯 개씩 쌓입니다.
+   * 그래서 이름이 같으면 하나로 묶고, 국가는 옆에 모아서 보여줍니다.
+   */
   function onDate(dateStr) {
-    return promotions.filter((p) => p.start <= dateStr && (p.end || p.start) >= dateStr);
+    const active = promotions.filter((p) => p.start <= dateStr && (p.end || p.start) >= dateStr);
+    const byName = new Map();
+    for (const p of active) {
+      const found = byName.get(p.name);
+      if (found) {
+        if (p.country && found.countries.indexOf(p.country) === -1) found.countries.push(p.country);
+      } else {
+        byName.set(p.name, {
+          name: p.name,
+          tier: p.tier,
+          countries: p.country ? [p.country] : [],
+        });
+      }
+    }
+    return [...byName.values()];
   }
 
   return (
@@ -112,10 +131,15 @@ export default function PromoCalendar({ promotions, focusMonth }) {
                   {active.slice(0, 3).map((p, i) => (
                     <div
                       key={p.name + i}
-                      className={'text-[11px] leading-tight px-1.5 py-0.5 rounded border truncate ' + tierChipClass(p.tier)}
-                      title={p.name + (p.country ? ' (' + p.country + ')' : '')}
+                      className={'text-[11px] leading-tight px-1.5 py-0.5 rounded border ' + tierChipClass(p.tier)}
+                      title={p.name + (p.countries.length ? ' (' + p.countries.join(', ') + ')' : '')}
                     >
-                      {p.name}
+                      <span className="block truncate">{p.name}</span>
+                      {p.countries.length > 0 && (
+                        <span className="block text-[9.5px] opacity-70 truncate">
+                          {p.countries.join(' · ')}
+                        </span>
+                      )}
                     </div>
                   ))}
                   {active.length > 3 && (
