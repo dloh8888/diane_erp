@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { Card, Delta, EmptyState } from './ui';
 import { useLang } from './LangContext';
+import Insight from './Insight';
+import { insightKeyword } from '../../lib/dashboard/insights';
 import { fmtNum, fmtCompact, fmtSignedPct } from '../../lib/dashboard/format';
 
 /** 작은 꺾은선 (원본 spark 대응) — 주차별 검색지수 흐름 */
@@ -329,7 +331,7 @@ function MarketplaceSection({ keyword, currency }) {
 }
 
 export default function KeywordPanel({ keyword, trend, rising, currency }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const hasAny =
     (keyword && keyword.rowCount) || (trend && trend.rowCount) || (rising && rising.length);
 
@@ -346,6 +348,7 @@ export default function KeywordPanel({ keyword, trend, rising, currency }) {
 
   return (
     <div className="space-y-3">
+      <Insight data={insightKeyword(trend, rising, keyword, lang)} />
       <SearchTrendSection trend={trend} />
       <RisingSection rising={rising} />
       <MarketplaceSection keyword={keyword} currency={currency} />

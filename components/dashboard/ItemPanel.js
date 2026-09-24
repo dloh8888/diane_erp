@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { Card, EmptyState } from './ui';
 import { useLang } from './LangContext';
+import Insight from './Insight';
+import { insightItem } from '../../lib/dashboard/insights';
 import { fmtFull, fmtCompact, fmtNum } from '../../lib/dashboard/format';
 
 const PAGE_SIZE = 20;
@@ -43,7 +45,7 @@ function Thumb({ item, templates }) {
 }
 
 export default function ItemPanel({ byItem, currency }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [cat, setCat] = useState('');
   const [country, setCountry] = useState('');
   const [kOnly, setKOnly] = useState('all');
@@ -58,6 +60,7 @@ export default function ItemPanel({ byItem, currency }) {
     let list = items.map((it) => {
       // 국가 필터가 걸리면 그 국가 값만, 아니면 전체 합계
       let gmv = 0, orders = 0, qty = 0;
+      let bauGmv = 0, bauOrders = 0;
       const entries = country
         ? [[country, it.byCountry[country]]].filter(([, v]) => v)
         : Object.entries(it.byCountry);
@@ -65,8 +68,19 @@ export default function ItemPanel({ byItem, currency }) {
         gmv += v.g[0];
         orders += v.g[1];
         qty += v.g[2];
+        bauGmv += v.b[0];
+        bauOrders += v.b[1];
       }
-      return { ...it, _gmv: gmv, _orders: orders, _qty: qty };
+      // BAU 기간과 비교 — 인사이트에서 성장/역성장 상품을 가려내는 데 씁니다
+      const aov = orders ? gmv / orders : null;
+      const bauAov = bauOrders ? bauGmv / bauOrders : null;
+      return {
+        ...it,
+        _gmv: gmv, _orders: orders, _qty: qty,
+        bauGmv,
+        gmvGrowthPct: bauGmv > 0 ? ((gmv - bauGmv) / bauGmv) * 100 : null,
+        aovGrowthPct: aov !== null && bauAov ? ((aov - bauAov) / bauAov) * 100 : null,
+      };
     });
 
     if (cat) list = list.filter((it) => it.cat === cat);
@@ -98,6 +112,8 @@ export default function ItemPanel({ byItem, currency }) {
   const urlTemplate = byItem.productUrlTemplate;
 
   return (
+    <div className="space-y-3">
+    <Insight data={insightItem(rows, currency, lang)} />
     <Card
       title={t('상품 랭킹')}
       note={
@@ -236,5 +252,6 @@ export default function ItemPanel({ byItem, currency }) {
         </button>
       )}
     </Card>
+    </div>
   );
 }

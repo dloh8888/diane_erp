@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react';
 import { Card, Delta, EmptyState } from './ui';
 import { useLang } from './LangContext';
+import Insight from './Insight';
+import { insightBrand } from '../../lib/dashboard/insights';
 import { fmtFull, fmtCompact, fmtNum, fmtPct, fmtSignedPct } from '../../lib/dashboard/format';
 
 const PAGE_SIZE = 30;
@@ -21,7 +23,7 @@ function RankDelta({ delta }) {
 }
 
 export default function BrandPanel({ byBrand, byMidCategory, brandCats, currency }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [kind, setKind] = useState('brand'); // brand | mid
   const [cat, setCat] = useState('');        // 대대분류 세부 탭
   const [kOnly, setKOnly] = useState('all'); // all | k | non
@@ -99,6 +101,7 @@ export default function BrandPanel({ byBrand, byMidCategory, brandCats, currency
 
   return (
     <div className="space-y-3">
+      <Insight data={insightBrand(source, lang)} />
       <Card
         title={kind === 'brand' ? t('브랜드 랭킹') : t('카테고리 대분류 랭킹')}
         note={t('Gmarket Day 기간 기준 · 랭킹은 일평균 GMV 순 · 랭킹 변동은 BAU 순위 대비 (▲ = 올라감) · 증감율은 BAU 일평균 대비')}

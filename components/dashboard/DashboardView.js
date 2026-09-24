@@ -9,8 +9,10 @@ import CategoryPanel from './CategoryPanel';
 import BrandPanel from './BrandPanel';
 import ItemPanel from './ItemPanel';
 import KeywordPanel from './KeywordPanel';
+import Insight from './Insight';
 import { LangProvider, LangToggle, useLang } from './LangContext';
 import { fmtCompact, fmtFull, fmtNum, fmtUpdated } from '../../lib/dashboard/format';
+import { insightOverview, insightCountry, insightCategory } from '../../lib/dashboard/insights';
 
 // 데이터가 실제로 있는 탭만 둡니다.
 // (원본에 있던 By Traffic / SNS MKT 는 각각 방문자수 데이터와 SNS API 연동이
@@ -188,6 +190,7 @@ function DashboardInner({ data }) {
         {/* ── Overview ── */}
         {tab === 'overview' && (
           <div className="space-y-3">
+            <Insight data={insightOverview(data, lang)} />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
               <Tile
                 hero
@@ -261,6 +264,7 @@ function DashboardInner({ data }) {
         {tab === 'country' && (
           <>
             <KToggle value={kScope} onChange={setKScope} />
+            <Insight data={insightCountry({ ...data, byCountry: countryRows, summary: countrySummary }, lang)} />
             <CountryPanel
               rows={countryRows}
               summary={countrySummary}
@@ -277,6 +281,7 @@ function DashboardInner({ data }) {
         {tab === 'category' && (
           <>
             <KToggle value={kScope} onChange={setKScope} />
+            <Insight data={insightCategory(categoryRows, lang)} />
             <CategoryPanel
               rows={categoryRows}
               countries={kview ? kview.countries : data.countries}
