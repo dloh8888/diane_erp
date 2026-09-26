@@ -160,7 +160,7 @@ function DashboardInner({ data }) {
                 href="/dashboard/import"
                 className="text-sm px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 whitespace-nowrap"
               >
-                {t('구글시트 올리기')}
+                {t('엑셀시트 올리기')}
               </Link>
             </div>
           </div>
@@ -316,7 +316,7 @@ function DashboardInner({ data }) {
 
         <p className="text-xs text-gray-400 mt-8 leading-relaxed">
           {en ? 'To change the data, edit the Google Sheet, download it with [File > Download > Microsoft Excel], and ' : '데이터를 바꾸려면 구글시트에서 수정한 뒤 [파일 > 다운로드 > Microsoft Excel] 로 받아 '}
-          <Link href="/dashboard/import" className="underline mx-1">{t('구글시트 올리기')}</Link>
+          <Link href="/dashboard/import" className="underline mx-1">{t('엑셀시트 올리기')}</Link>
           {en ? 'upload it again.' : '에서 다시 올리면 됩니다.'}
         </p>
       </div>

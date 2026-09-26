@@ -39,7 +39,7 @@ export default async function DashboardPage() {
             href="/dashboard/import"
             className="inline-block text-sm px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
           >
-            구글시트 올리기
+            엑셀시트 올리기
           </Link>
         </div>
       </main>

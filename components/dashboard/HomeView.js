@@ -33,7 +33,7 @@ function HomeInner({ data }) {
               href="/dashboard/import"
               className="text-sm px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 whitespace-nowrap"
             >
-              {t('구글시트 올리기')}
+              {t('엑셀시트 올리기')}
             </Link>
           </div>
         </div>
@@ -54,7 +54,7 @@ function HomeInner({ data }) {
               href="/dashboard/import"
               className="inline-block text-sm px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
             >
-              {t('구글시트 올리기')}
+              {t('엑셀시트 올리기')}
             </Link>
           </div>
         )}
